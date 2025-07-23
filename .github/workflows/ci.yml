@@ -33,20 +33,31 @@ jobs:
       - name: Setup CMake
         uses: lukka/get-cmake@latest
 
-      - name: Setup vcpkg
+      - name: Install dependencies (Non-Windows)
+        if: runner.os != 'Windows'
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y build-essential cmake libsdl3-dev
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            brew update
+            brew install cmake sdl3
+          fi
+
+      - name: Setup vcpkg (Windows only)
+        if: runner.os == 'Windows'
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: 'vcpkg.json'
 
-      - name: Configure and build
-        uses: lukka/run-cmake@v10
-        with:
-          configurePreset: 'vcpkg-release'
-          buildPreset: 'vcpkg-release'
-          testPreset: 'vcpkg-release'
-          configurePresetAdditionalArgs: |
-            ['-DCMAKE_BUILD_TYPE=Release']
-          buildPresetAdditionalArgs: |
-            ['--config', 'Release']
-          testPresetAdditionalArgs: |
-            ['--config', 'Release']
+      - name: Configure and build (Debug)
+        run: |
+          cmake -S . -B build/debug -DCMAKE_BUILD_TYPE=Debug \
+            ${{ runner.os == 'Windows' && format('-DCMAKE_TOOLCHAIN_FILE={0}/vcpkg/scripts/buildsystems/vcpkg.cmake', github.workspace) || '' }}
+          cmake --build build/debug --config Debug
+
+      - name: Configure and build (Release)
+        run: |
+          cmake -S . -B build/release -DCMAKE_BUILD_TYPE=Release \
+            ${{ runner.os == 'Windows' && format('-DCMAKE_TOOLCHAIN_FILE={0}/vcpkg/scripts/buildsystems/vcpkg.cmake', github.workspace) || '' }}
+          cmake --build build/release --config Release
