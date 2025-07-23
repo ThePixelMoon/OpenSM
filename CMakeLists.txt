@@ -52,6 +52,7 @@ target_link_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/lib)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/public)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Debug>:IN_DEBUG>
+	USE_STEAM
 )
 target_link_libraries(${PROJECT_NAME}
 	${STEAM_API_LIB}

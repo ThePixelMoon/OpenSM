@@ -1,6 +1,9 @@
 // app.cpp
 #include "app.h"
 #include "log.h"
+#ifdef USE_STEAM
+#include <steam/steam_api.h>
+#endif
 
 App::App() : m_pWindow(nullptr) {
 	m_iWidth = 1024;
@@ -8,11 +11,19 @@ App::App() : m_pWindow(nullptr) {
 	m_sTitle = "OpenSM";
 	m_bRunning = false;
 
-	bool m_SDLInit = SDL_Init(SDL_INIT_VIDEO);
-	if (!m_SDLInit) {
+	bool SDLInit = SDL_Init(SDL_INIT_VIDEO);
+	if (!SDLInit) {
 		Log::log(Log::Level::Critical, "SDL_Init failed");
 		return;
 	}
+
+#ifdef USE_STEAM
+	bool SteamInit = SteamAPI_Init();
+	if (!SteamInit) {
+		Log::log(Log::Level::Critical, "SteamAPI_Init failed");
+		return;
+	}
+#endif
 }
 
 App::~App() {
@@ -23,6 +34,10 @@ App::~App() {
 		SDL_DestroyRenderer(m_pRenderer);
 
 	SDL_Quit();
+
+#ifdef USE_STEAM
+    SteamAPI_Shutdown();
+#endif
 }
 
 bool App::Initialize() {

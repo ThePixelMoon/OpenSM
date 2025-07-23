@@ -23,6 +23,7 @@ void Log::log(Level level, const char* message)
 			break;
 		case Level::Critical:
 			std::cerr << "[CRITICAL] " << message << std::endl;
+			exit(-1); // exit the program on critical errors
 			break;
 		default:
 			break;
