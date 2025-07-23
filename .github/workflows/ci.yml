@@ -27,6 +27,7 @@ jobs:
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
       VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.triplet }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -48,6 +49,7 @@ jobs:
             git clone --recurse-submodules https://github.com/libsdl-org/SDL.git
             cd SDL && mkdir build && cd build
             cmake .. -DCMAKE_BUILD_TYPE=Release
+            cmake --build . --config Release
             sudo cmake --install .
             cd ../..
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
@@ -61,14 +63,28 @@ jobs:
         with:
           vcpkgJsonGlob: 'vcpkg.json'
 
-      - name: Configure and build Debug
+      - name: Configure and build Debug (Non-Windows)
+        if: runner.os != 'Windows'
         run: |
-          cmake -S . -B build/debug -DCMAKE_BUILD_TYPE=Debug \
-            ${{ runner.os == 'Windows' && format('-DCMAKE_TOOLCHAIN_FILE={0}/vcpkg/scripts/buildsystems/vcpkg.cmake', github.workspace) || '' }}
+          cmake -S . -B build/debug -DCMAKE_BUILD_TYPE=Debug
           cmake --build build/debug --config Debug
 
-      - name: Configure and build Release
+      - name: Configure and build Debug (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          cmake -S . -B build/release -DCMAKE_BUILD_TYPE=Release \
-            ${{ runner.os == 'Windows' && format('-DCMAKE_TOOLCHAIN_FILE={0}/vcpkg/scripts/buildsystems/vcpkg.cmake', github.workspace) || '' }}
+          cmake -S . -B build/debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
+          cmake --build build/debug --config Debug
+
+      - name: Configure and build Release (Non-Windows)
+        if: runner.os != 'Windows'
+        run: |
+          cmake -S . -B build/release -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/release --config Release
+
+      - name: Configure and build Release (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cmake -S . -B build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
           cmake --build build/release --config Release
