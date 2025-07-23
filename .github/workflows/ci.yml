@@ -39,7 +39,12 @@ jobs:
         run: |
           if [[ "$RUNNER_OS" == "Linux" ]]; then
             sudo apt-get update
-            sudo apt-get install -y build-essential cmake git
+            sudo apt-get install -y \
+              build-essential cmake git \
+              libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxinerama-dev libxi-dev \
+              libgl1-mesa-dev libwayland-dev libwayland-client0 libwayland-cursor0 libwayland-egl1-mesa \
+              libasound2-dev libpulse-dev libudev-dev libdbus-1-dev libdrm-dev libgbm-dev \
+              libjack-jackd2-dev libpipewire-0.3-dev libsndio-dev libusb-1.0-0-dev
             git clone --recurse-submodules https://github.com/libsdl-org/SDL.git
             cd SDL && mkdir build && cd build
             cmake .. -DCMAKE_BUILD_TYPE=Release
