@@ -1,0 +1,10 @@
+{
+  "name": "opensm",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "sdl3"
+  ],
+  "overrides": [],
+  "default-features": [],
+  "builtin-baseline": "623b4f833d65b80ad3aa31edc38b5cb15b1f34a1"
+}

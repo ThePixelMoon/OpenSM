@@ -1,0 +1,52 @@
+# ci.yml
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            triplet: x64-linux
+          - os: ubuntu-latest
+            triplet: x86-linux
+          - os: windows-latest
+            triplet: x64-windows
+          - os: windows-latest
+            triplet: x86-windows
+          - os: macos-latest
+            triplet: x64-osx
+    env:
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
+      VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.triplet }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: 'vcpkg.json'
+
+      - name: Configure and build
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'vcpkg-release'
+          buildPreset: 'vcpkg-release'
+          testPreset: 'vcpkg-release'
+          configurePresetAdditionalArgs: |
+            ['-DCMAKE_BUILD_TYPE=Release']
+          buildPresetAdditionalArgs: |
+            ['--config', 'Release']
+          testPresetAdditionalArgs: |
+            ['--config', 'Release']
